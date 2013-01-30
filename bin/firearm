@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+$:.unshift File.join(File.dirname(__FILE__), *%w{ .. lib })
+
+require 'firearm'
+require 'commander/import'
+
+program :name, 'firearm'
+program :version, Firearm::VERSION
+program :description, "A jekyll-based framework for sophisticated HTML5 trigger.io applications."
+
+command :make do |c|
+  c.syntax = "firearm make [platform]"
+  c.description = "Build and run your a firearm project"
+
+  c.action do |args, options|
+    project = Firearm::Project.new
+    project.process
+    project.forge_build args[0]
+    project.forge_run args[0]
+  end
+end
+
