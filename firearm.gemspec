@@ -18,6 +18,8 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'commander'
   gem.add_dependency 'jekyll'
   gem.add_dependency 'haml'
+  gem.add_dependency 'jekyll-haml'
+  gem.add_dependency 'bootstrap-sass'
   gem.add_dependency 'compass'
   gem.add_dependency 'sass'
   gem.add_dependency 'coffee-script'

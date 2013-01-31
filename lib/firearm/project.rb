@@ -1,32 +1,58 @@
+require 'firearm/plugin'
 require 'jekyll'
+require 'jekyll-haml'
+require 'jekyll-assets'
+require 'jekyll-assets/compass'
 
 module Firearm
   class Project < Jekyll::Site
 
     DEFAULTS = {
       'source' => Dir.pwd,
-      'destination' => File.expand_path("./src")
+      'destination' => File.expand_path("./src"),
+      'assets' => {
+        'baseurl' => '',
+        'js_prefix' => 'js',
+        'css_prefix' => 'css'
+      }
     }
 
-    FIREARM_ROOT = "#{File.expand_path(File.dirname(__FILE__))}/../.."
+    FIREARM_ROOT = File.expand_path('../../', File.dirname(__FILE__))
 
-    PLUGINS_DIR = "#{FIREARM_ROOT}/vendor/jekyll/plugins"
+    PLUGINS_DIR = File.expand_path('lib/firearm/plugins', FIREARM_ROOT)
 
     def initialize options = {}
       options = Jekyll.configuration(DEFAULTS.merge(options))
       options['source'] = File.expand_path('./app')
       options['plugins'] = [options['plugins']] unless options['plugins'].is_a? Array
       options['plugins'] << PLUGINS_DIR
-      super options
+      result = super options
+      backup 'config.json'
+      backup 'identity.json'
+      result
+    end
+
+    def setup
+      Firearm::Plugin.subclasses.each do |plugin|
+        plugin.asset_paths.each do |path|
+          self.assets.append_path path
+        end
+      end
+      super
     end
 
     def process
-      backup 'config.json'
-      backup 'identity.json'
+      setup
       result = super
       restore 'config.json'
       restore 'identity.json'
       result
+    end
+
+    def copy_assets type, ext
+      assets_dest = File.expand_path(type, dest)
+      Dir.mkdir(assets_dest) unless File.exists?(assets_dest)
+      `cp #{dest}/assets/*.#{ext} #{assets_dest}`
     end
 
     def forge_build platform
@@ -41,9 +67,7 @@ module Firearm
 
     def project_dir
       @project_dir_path ||= File.expand_path("#{FIREARM_ROOT}/.projects/#{source.gsub('/', '-')}")
-      unless File.exists? @project_dir_path
-        Dir.mkdir(@project_dir_path)
-      end
+      Dir.mkdir(@project_dir_path) unless File.exists? @project_dir_path
       @project_dir_path
     end
 
