@@ -21,6 +21,9 @@ module Firearm
 
     PLUGINS_DIR = File.expand_path('lib/firearm/plugins', FIREARM_ROOT)
 
+    PROJECTS_PATH = File.expand_path('.projects', FIREARM_ROOT)
+    Dir.mkdir(PROJECTS_PATH) unless File.exists?(PROJECTS_PATH)
+
     def initialize options = {}
       options = Jekyll.configuration(DEFAULTS.merge(options))
       options['source'] = File.expand_path('./app')
